@@ -26,7 +26,7 @@ class AssignmentView(ModelViewSet):
             course = MyCourses.objects.filter(student = user)
             batch = Batch.objects.filter(course=course)
             if course:
-                assingment = Assignment.objects.filter(batch=batch)
+                assingment = Assignment.objects.filter(batch=batch,course=course)
                 return assingment
         if user.is_superuser or user.is_staff:
             return Assignment.objects.all()
@@ -39,7 +39,28 @@ class SubmitAssignmentView(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return SubmitAssignment.objects.all()
         return SubmitAssignment.objects.filter(submitted_by=user)
 
     def update(self, request, *args, **kwargs):
         return Response({'error':'request not allowed'})
+    
+def is_staff(user):
+    if user.is_superuser or user.is_staff:
+        CheckAssignment.objects.all()
+    
+
+class CheckAssignmentView(ModelViewSet):
+    # queryset=CheckAssignment.add_to_class
+    serializer_class = CheckAssignmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user=self.request.user
+        teacher=Teacher.objects.filter(user=self.request.user)
+        if teacher:
+            return CheckAssignment.objects.filter(created_by=user)
+        is_staff(user)
+        
+        
